@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pac-Man</title>
+    <style>
+      canvas {
+        border: 1px solid black;
+        background-color: black;
+        display: block;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="pacmanCanvas" width="400" height="400"></canvas>
+
+    <script>
+      const canvas = document.getElementById("pacmanCanvas");
+      const ctx = canvas.getContext("2d");
+
+      const pacman = {
+        x: 200,
+        y: 200,
+        radius: 15,
+        mouthOpen: true,
+        mouthAngle: 0,
+        maxMouthAngle: 0.25,
+        speed: 2,
+        direction: 0, // 0: right, 1: down, 2: left, 3: up
+      };
+
+      window.addEventListener("keydown", (event) => {
+        switch (event.key) {
+          case "ArrowRight":
+            pacman.direction = 0;
+            break;
+          case "ArrowDown":
+            pacman.direction = 1;
+            break;
+          case "ArrowLeft":
+            pacman.direction = 2;
+            break;
+          case "ArrowUp":
+            pacman.direction = 3;
+            break;
+        }
+      });
+
+      function drawPacman() {
+        const startAngle =
+          (pacman.direction * 0.5 + 0.05 + pacman.mouthAngle) * Math.PI;
+        const endAngle =
+          (pacman.direction * 0.5 + 1.95 - pacman.mouthAngle) * Math.PI;
+
+        ctx.beginPath();
+        ctx.fillStyle = "yellow";
+        ctx.moveTo(pacman.x, pacman.y);
+        ctx.arc(pacman.x, pacman.y, pacman.radius, startAngle, endAngle);
+        ctx.lineTo(pacman.x, pacman.y);
+        ctx.fill();
+
+        // Draw eye
+        let eyeX, eyeY;
+        switch (pacman.direction) {
+          case 0: // right
+            eyeX = pacman.x + pacman.radius / 3;
+            eyeY = pacman.y - pacman.radius / 2;
+            break;
+          case 1: // down
+            eyeX = pacman.x + pacman.radius / 2;
+            eyeY = pacman.y + pacman.radius / 3;
+            break;
+          case 2: // left
+            eyeX = pacman.x - pacman.radius / 3;
+            eyeY = pacman.y - pacman.radius / 2;
+            break;
+          case 3: // up
+            eyeX = pacman.x + pacman.radius / 2;
+            eyeY = pacman.y - pacman.radius / 3;
+            break;
+        }
+
+        ctx.beginPath();
+        ctx.fillStyle = "black";
+        ctx.arc(eyeX, eyeY, pacman.radius / 6, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+
+      function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+
+      function update() {
+        clearCanvas();
+
+        switch (pacman.direction) {
+          case 0: // right
+            pacman.x += pacman.speed;
+            break;
+          case 1: // down
+            pacman.y += pacman.speed;
+            break;
+          case 2: // left
+            pacman.x -= pacman.speed;
+            break;
+          case 3: // up
+            pacman.y -= pacman.speed;
+            break;
+        }
+
+        // Change direction when hitting canvas boundaries
+        if (pacman.x > canvas.width) {
+          pacman.x = -pacman.radius;
+        } else if (pacman.x < -pacman.radius) {
+          pacman.x = canvas.width;
+        }
+
+        if (pacman.y > canvas.height) {
+          pacman.y = -pacman.radius;
+        } else if (pacman.y < -pacman.radius) {
+          pacman.y = canvas.height;
+        }
+
+        // Animate mouth open/close
+        if (pacman.mouthOpen) {
+          pacman.mouthAngle += 0.05;
+          if (pacman.mouthAngle >= pacman.maxMouthAngle) {
+            pacman.mouthOpen = false;
+          }
+        } else {
+          pacman.mouthAngle -= 0.05;
+          if (pacman.mouthAngle <= 0) {
+            pacman.mouthOpen = true;
+          }
+        }
+
+        drawPacman();
+      }
+
+      function loop() {
+        update();
+        requestAnimationFrame(loop);
+      }
+
+      loop();
+    </script>
+  </body>
+</html>
